@@ -1,16 +1,18 @@
 # ChatGPT Invoice Downloader
 
-A Python script that automatically logs into ChatGPT, navigates to the Stripe billing portal, and downloads your ChatGPT Plus invoice PDFs into organised monthly folders.
+> Since OpenAI still doesn't email invoices automatically, this script does it for you.
+
+Automatically logs into ChatGPT, downloads your invoice PDFs from the Stripe billing portal, and saves them into organised monthly folders — with one manual step (entering a verification code).
+
+Works with **ChatGPT Plus** and **ChatGPT Teams**.
 
 ## What it does
 
-- Opens a visible browser window and logs into ChatGPT
-- Navigates to your billing portal on Stripe
-- Downloads ChatGPT Plus invoice PDFs
-- Saves them into organised monthly folders like `invoices/2026-01/`
+- Opens a browser, fills in your email, and waits for you to enter the verification code
+- Navigates to your Stripe billing portal automatically
+- Downloads all invoice PDFs since your chosen start date
+- Saves them into monthly folders like `invoices/2026-01/`
 - Skips invoices already downloaded — safe to run every month
-
-## Folder structure
 
 ```
 invoices/
@@ -23,8 +25,8 @@ invoices/
 ## Requirements
 
 - Python 3.8+
-- A ChatGPT Plus subscription
-- Chromium (installed automatically in the setup step below)
+- A ChatGPT Plus or Teams subscription
+- macOS, Windows, or Linux
 
 ## Setup
 
@@ -50,14 +52,14 @@ playwright install chromium
 cp config.example.py config.py
 ```
 
-Open `config.py` and fill in your details:
+Open `config.py` and fill in two things:
 
 ```python
-START_DATE = "2026/01/01"       # only download invoices from this date onwards
-CHATGPT_EMAIL = "you@example.com"
+START_DATE = "2026/01/01"         # only download invoices from this date onwards
+CHATGPT_EMAIL = "you@example.com" # your ChatGPT login email
 ```
 
-> **Note:** `config.py` is listed in `.gitignore` — your email is never uploaded to GitHub.
+> `config.py` is listed in `.gitignore` — your email is never uploaded to GitHub.
 
 ## Usage
 
@@ -65,7 +67,7 @@ CHATGPT_EMAIL = "you@example.com"
 python3 main.py
 ```
 
-A browser window will open automatically. The script fills in your email and submits it. OpenAI then sends a **verification code to your inbox** — enter it in the browser when prompted. Once logged in, the script navigates to your billing portal and downloads all invoices automatically.
+A browser window opens automatically. The script fills in your email and submits it. OpenAI sends a **verification code to your inbox** — enter it in the browser. Once logged in, everything else is automatic.
 
 ## Example output
 
@@ -80,15 +82,13 @@ Filling in email address...
 ACTION REQUIRED: Check your email for a verification code
 and enter it in the browser window.
 
-The script will continue automatically once you are logged in.
+The script continues automatically once you are logged in.
 You have 3 minutes.
 ============================================================
 
 Login successful!
 Navigating to subscription settings...
-Opening Account tab...
 Opening billing portal...
-Reached billing portal: https://pay.openai.com/...
 
 Looking for invoices...
 Found 3 invoice link(s).
@@ -102,16 +102,26 @@ Found 3 invoice link(s).
 === Done! Downloaded 2 ChatGPT invoice(s). ===
 ```
 
-## ⚠️ Language note
+## Scheduling
 
-The script uses English button labels to navigate the ChatGPT interface (`Account`, `Manage`, `Download`). If your ChatGPT is set to a different language, these selectors may not work. You can either:
-- Set your ChatGPT interface language to English in settings, or
+Because OpenAI requires a verification code on each login, the script can't run fully unattended. You can still schedule it as a monthly reminder — it will open the browser automatically and wait for you to enter the code.
+
+To schedule it, use your OS's built-in scheduler:
+
+- **macOS** — `launchd` (via a `.plist` file in `~/Library/LaunchAgents/`)
+- **Linux** — `cron` (`crontab -e`)
+- **Windows** — Task Scheduler
+
+## Language note
+
+The script uses English button labels to navigate the ChatGPT interface (`Account`, `Manage`, `Download`). If your ChatGPT is set to a different language, either:
+- Switch your ChatGPT interface language to English in settings, or
 - Update the button labels in `main.py` to match your language
 
 ## Security
 
 - Your email is stored **only on your computer** in `config.py`
-- The browser runs visibly so you can see everything happening
+- The browser runs visibly so you can see exactly what's happening at all times
 - `config.py` and `invoices/` are excluded from Git via `.gitignore`
 
 ## Contributing
